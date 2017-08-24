@@ -10,13 +10,9 @@ log 101
 log 10
 
 agilefant-automation-login
-
-#echo "PETER"
-
-MAIN=$(curl -s --cookie $COOKIE_FILE_DIR/$COOKIE_FILE_NAME --cookie-jar $COOKIE_FILE_DIR/$COOKIE_FILE_NAME --location $AGILEFANT_HOST:$AGILEFANT_PORT$AGILEFANT_PATH/ajax/menuData.action | jq -r '[.[] | {type: .addClass, id: .id, title: .title, childs: [(.children[] | {type: .addClass, id: .id, title: .title, childs: [(.children[] | {class: .addClass, id: .id, title: .title})]})]}]')
-
-#echo $MAIN
-
+MENU_DATA=""
+agilefant-automation-getMenuData MENU_DATA
+MAIN=$(echo $MENU_DATA | jq -r '[.[] | {type: .addClass, id: .id, title: .title, childs: [(.children[] | {type: .addClass, id: .id, title: .title, childs: [(.children[] | {class: .addClass, id: .id, title: .title})]})]}]')
 PRODUCT_COUNT="$(echo $MAIN | jq '. | length')"
 log "PRODUCT_COUNT is: $PRODUCT_COUNT" 1
 for i in $(seq 1 "$PRODUCT_COUNT"); 
@@ -38,13 +34,15 @@ do
 			for k in $(seq 1 "$PROJECT_ITERATION_COUNT"); 
 			do
 				ITERATION=$(echo $PRODUCT | jq -r --arg J $j --arg K $k '. | .childs[$J | tonumber -1] | .childs[$K | tonumber -1]') 
-			done	
-			PROJECT_STORIES=$(curl -s --cookie $COOKIE_FILE_DIR/$COOKIE_FILE_NAME --cookie-jar $COOKIE_FILE_DIR/$COOKIE_FILE_NAME --data "projectId=$BACKLOG_ID" --location $AGILEFANT_HOST:$AGILEFANT_PORT$AGILEFANT_PATH/ajax/getProjectStoryTree.action | grep -o -E "storyid\S+" | grep -o "[0-9]*")
-		
+			done
+			PROJECT_STORY_TREE=""
+			agilefant-automation-getProjectStoryTree PROJECT_STORY_TREE $BACKLOG_ID	
+			PROJECT_STORIES=$(echo $PROJECT_STORY_TREE | grep -o -E "storyid\S+" | grep -o "[0-9]*")
 			while read -ra STORIES; do
       			for l in "${STORIES[@]}"; do
           			log "Working on story with id: $l" 1
-					STORY_TASKS=$(curl -s --cookie $COOKIE_FILE_DIR/$COOKIE_FILE_NAME --cookie-jar $COOKIE_FILE_DIR/$COOKIE_FILE_NAME --data "projectId=$BACKLOG_ID" --location $AGILEFANT_HOST:$AGILEFANT_PORT$AGILEFANT_PATH/ajax/retrieveStory.action?storyId=$l)
+					STORY_TASKS=""
+					agilefant-automation-getStory STORY_TASKS $BACKLOG_ID $l
 				TASK_IDS=$(echo $STORY_TASKS | jq -r '. | .tasks[] | .id')
 				while read -ra TASKS; do
 					for m in "${TASKS[@]}"; do
@@ -60,7 +58,6 @@ do
 		fi
 	done
 done
-
 agilefant-automation-logout
 
 log 11
