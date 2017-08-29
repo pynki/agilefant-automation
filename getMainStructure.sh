@@ -200,8 +200,6 @@ done
 echo "#####################################################################"
 
 echo "i = $i"
-#echo "X_PRODUCT=$X_PRODUCT"
-#echo "MAIN_JSON=$MAIN_JSON"
 
 MAIN_JSON=$(echo $MAIN_JSON | jq --arg I "$i" --arg X "$X_PRODUCT" '. | .products[ $I | tonumber -1] |= .+ ($X | fromjson)')
 done
