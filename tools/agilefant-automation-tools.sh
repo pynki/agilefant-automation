@@ -117,6 +117,120 @@ agilefant-automation-getUsers() {
     log "CURL_OUTPUT is: $CURL_OUTPUT" 0
 }
 
+###############################################################################
+
+# call agilefant-automation-getProduct-simple $RETURN_VAL $ID
+agilefant-automation-getProduct-simple() {
+	log "Gettingproduct simple" 1
+    declare -n reVal=$1
+	
+	agilefant-automation-getProduct GS_PRODUCT $2
+	local GS_PRODUCT=$(echo $GS_PRODUCT | jq '. | del(.description) | del(.class) | del(.standAlone) | del(.product)')
+	local GS_PRODUCT_JSON=$(echo $GS_PRODUCT | jq '. | {"id":.id, "type":0, "data": ., "projects": []}')
+	
+	local GS_JSON=$GS_PRODUCT_JSON
+	
+	reVal=$GS_JSON
+    log "JSON is: $GS_JSON" 0
+}
+
+# call agilefant-automation-getProject-simple $RETURN_VAL $ID
+agilefant-automation-getProject-simple() {
+	log "Getting project simple" 1
+    declare -n reVal=$1
+	
+	agilefant-automation-getProject GS_PROJECT $2
+	local GS_PROJECT=$(echo $GS_PROJECT | jq '. | del(.class) | del(.description) | del(.children) | del(.leafStories) | del(.product) | del(.rank) | del(.root) | del(.standAlone) | del(.status)')
+	local GS_PROJECT_JSON=$(echo $GS_PROJECT | jq '. | {"id": .id, "type":1, "users": [], "data": ., "stories": [], "iterations": []}')
+	local GS_PROJECT_ASSIGNEES_COUNT=$(echo $GS_PROJECT | jq '. | .assignees | length')
+	for gs_i in $(seq 1 "$GS_PROJECT_ASSIGNEES_COUNT");
+	do
+        local GS_PROJECT_ASSIGNEE=$(echo $GS_PROJECT | jq -r --arg I $gs_i '. | .assignees[$I | tonumber -1] | del(.class) | del(.initials)')
+        local GS_PROJECT_JSON=$(echo $GS_PROJECT_JSON | jq -r --arg I $gs_i --arg A "$GS_PROJECT_ASSIGNEE" '. | .users[$I | tonumber -1] |= . + ($A | fromjson)')
+
+        local GS_PROJECT_JSON=$(echo $GS_PROJECT_JSON | jq '. | del(.data.assignees)')
+	done
+	
+	local GS_JSON=$GS_PROJECT_JSON
+	
+	reVal=$GS_JSON
+    log "JSON is: $GS_JSON" 0
+}
+
+# call agilefant-automation-getIteration-simple $RETURN_VAL $ID
+agilefant-automation-getIteration-simple() {
+	log "Getting iteration simple" 1
+    declare -n reVal=$1
+	
+	agilefant-automation-getIteration GS_ITERATION $2
+	local GS_ITERATION=$(echo $GS_ITERATION | jq '. | del(.class) | del(.tasks) | del(.description) | del(.rankedStories) | del(.root) |  del(.product) | del(.readonlyToken) | del(.iterationMetrics) ')
+	local GS_ITERATION_JSON=$(echo $GS_ITERATION | jq '. | {"id": .id, "type": 2, "users": [], "data": ., "tasks": [], "stories":[]}')
+	local GS_ITERATION_ASSIGNEES_COUNT=$(echo $GS_ITERATION | jq '. | .assignees | length')
+	for gs_i in $(seq 1 "$GS_ITERATION_ASSIGNEES_COUNT");
+	do
+		local GS_ITERATION_ASSIGNEE=$(echo $GS_ITERATION | jq -r --arg I $gs_i '. | .assignees[$I | tonumber -1] | del(.class) | del(.initials)')
+		local GS_ITERATION_JSON=$(echo $GS_ITERATION_JSON | jq -r --arg I $gs_i --arg A "$GS_ITERATION_ASSIGNEE" '. | .users[$I | tonumber -1] |= . + ($A | fromjson)')
+        local GS_ITERATION_JSON=$(echo $GS_ITERATION_JSON | jq '. | del(.data.assignees)')
+	done
+	
+	local GS_JSON=$GS_ITERATION_JSON
+	
+	reVal=$GS_JSON
+    log "JSON is: $GS_JSON" 0
+}
+
+# call agilefant-automation-getStory-simple $RETURN_VAL $ID
+agilefant-automation-getStory-simple() {
+	log "Getting story simple $2" 1
+    declare -n reVal=$1
+	
+	agilefant-automation-getStory GS_STORY $2
+
+	local GS_STORY=$(echo $GS_STORY | jq '. | del(.backlog) | del(.class) | del(.children) | del(.description) | del(.highestPoints) | del(.metrics) | del(.tasks) | del(.treeRank) | del(.workQueueRank) | del(.labels)')
+	local GS_STORY_PARENT=$(echo $GS_STORY | jq '. | .parent.id')
+	if [ $GS_STORY_PARENT == "null" ]; then
+		GS_STORY_PARENT="-1"
+	fi
+
+	local GS_STORY=$(echo $GS_STORY | jq '. | del(.parent)')
+	local GS_STORY_JSON=$(echo $GS_STORY | jq --arg P "$GS_STORY_PARENT" '. | {"id": .id, "type": 3, "parent": ($P | tonumber -1),"users":[], "iteration": .iteration.id, "data": ., "tasks":[]}')
+	local GS_STORY_RESPONSIBLES_COUNT=$(echo $GS_STORY | jq '. | .responsibles | length')
+	for gs_i in $(seq 1 "$GS_STORY_RESPONSIBLES_COUNT");
+	do
+		local GS_STORY_RESPONSIBLE=$(echo $GS_STORY | jq -r --arg I $gs_i '. | {"id": (.responsibles[$I | tonumber -1] | .id), "name":  (.responsibles[$I | tonumber -1] | .name)}')
+		local GS_STORY_JSON=$(echo $GS_STORY_JSON | jq -r --arg I $gs_i --arg A "$GS_STORY_RESPONSIBLE" '. | .users[$I | tonumber -1] |= . + ($A | fromjson)')
+		 local GS_STORY_JSON=$(echo $GS_STORY_JSON | jq '. | del(.data.responsibles) | del(.data.iteration)')
+	done
+	
+	local GS_JSON=$GS_STORY_JSON
+	
+	reVal=$GS_JSON
+    log "JSON is: $GS_JSON" 0
+}
+
+# call agilefant-automation-getTask-simple $RETURN_VAL $ID
+agilefant-automation-getTask-simple() {
+	log "Getting task simple" 1
+    declare -n reVal=$1
+	
+	agilefant-automation-getTask GS_TASK $2
+	local GS_TASK=$(echo $GS_TASK | jq '. | del(.class) | del(.rank) | del(.description) | del(.rank)')
+	local GS_TASK_JSON=$(echo $GS_TASK | jq '. | {"id": .id, "type": 4, "users":[], "data": .}')
+	local GS_TASK_RESPONSIBLES_COUNT=$(echo $GS_TASK | jq '. | .responsibles | length')
+	for gs_i in $(seq 1 "$GS_TASK_RESPONSIBLES_COUNT");
+	do
+		local GS_TASK_RESPONSIBLE=$(echo $GS_TASK | jq -r --arg I $gs_i '. | {"id": (.responsibles[$I | tonumber -1] | .id), "name":  (.responsibles[$I | tonumber -1] | .name)}')
+		local GS_TASK_JSON=$(echo $GS_TASK_JSON | jq -r --arg I $gs_i --arg A "$GS_TASK_RESPONSIBLE" '. | .users[$I | tonumber -1] |= . + ($A | fromjson)')
+		local GS_TASK_JSON=$(echo $GS_TASK_JSON | jq '. | del(.data.responsibles) | del(.data.iteration)')
+	done
+	
+	local JSON=$GS_TASK_JSON
+	
+	reVal=$JSON
+    log "JSON is: $GS_JSON" 0
+}
+
+
 #TODO BIG ONE: build helper function to read out the data of objects from the JSON build in mainstructure script. get main struct reads into a var, that var is passed and then the data returned. the id of the data wanted is passed to. like this: getProjectDataFromTree($project_id $tree)
 
 #TODO get all objects of a type with their data, return json
