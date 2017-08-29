@@ -229,7 +229,7 @@ agilefant-automation-getTask-simple() {
 	reVal=$JSON
     log "JSON is: $GS_JSON" 0
 }
-# call agilefant-automation-getTask-simple $RETURN_VAL 
+# call agilefant-automation-getMainStructure $RETURN_VAL 
 agilefant-automation-getMainStructure() {
 	log "Getting main structure" 1
     declare -n reVal=$1
