@@ -16,4 +16,4 @@ script to provide a agilefant commandline api. calls for creating, deleting, edi
 
 using the ./tools/agilefant-automation-tools.sh functions might come with uncalculated risks! the delete functions will be happy to delete products etc. without asking you any questions! there may be corner cases that are not covered or tested in all the functions!
 
-### all this is work in progress and should not be used if you do not unsderstand the scripts!
+### all this is work in progress and should not be used if you do not unsderstand the scripts! 
