@@ -12,7 +12,7 @@ script to automatically install agilefant opensource on a ubuntu (or apt based s
 
 script to provide a agilefant commandline api. calls for creating, deleting, editing objects are implemented. provides a function to get a json representation of all the objects to perform searches etc. login/logout function. function to execute callbacks for each object.
 
-there are things that are totally left out right now: labels and ranking, spending effort. if i have the time and the need to implement them i will do it.
+there are things that are totally left out right now: labels and ranking, spending effort and user management. if i have the time and the need to implement them i will do it.
 
 # WARNING:
 
