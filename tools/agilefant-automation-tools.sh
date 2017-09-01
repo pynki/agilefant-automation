@@ -267,7 +267,11 @@ agilefant-automation-getTask-simple() {
     log "JSON is: $GS_JSON" 0
 }
 
-# call agilefant-automation-getMainStructure $RETURN_VAL 
+# call agilefant-automation-getMainStructure $RETURN_VAL
+# function to create a simple representation of the agilefant object structure (products, projects, iterations, stories, tasks)
+# it cuts out crosslinks between objects (except for stories with parents) and leaves out text heavy fields like descriptions
+# this funtion is meant to give a json representation of all agilefant objects to run searches and other operations on
+# see the agilefant-automation-ExecForAll function below for an example on how to iterate over the structure this funtion creates
 agilefant-automation-getMainStructure() {
 	log "Getting main structure" 1
     declare -n reVal=$1
@@ -639,7 +643,7 @@ agilefant-automation-deleteTask() {
 # simple function to run functions on all objects
 # calls callbacks with 3 args:
 # callback OBJECT_ID OBJECT_JSON MAIN_JSON
-# calls in this order: project-stories-tasks - project-stories - projects - iteration-tasks - iteration-story-tasks - iteration-stories - products
+# calls in this order: project-stories-tasks - project-stories - projects - iteration-story-tasks - iteration-stories - iteration-tasks - products
 agilefant-automation-ExecForAll() {
 MAIN_JSON=$1
 	PRODUCTS=$(echo $MAIN_JSON | jq '. | .products')
