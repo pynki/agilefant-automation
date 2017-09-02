@@ -320,24 +320,26 @@ agilefant-automation-getMainStructure() {
 				done
 				agilefant-automation-getProjectStoryTree PROJECT_STORY_TREE $BACKLOG_ID	
 				PROJECT_STORIES=$(echo $PROJECT_STORY_TREE | grep -o -E "storyid\S+" | grep -o "[0-9]*")
-				count=1
-				while read -ra STORIES; do
-					for l in "${STORIES[@]}"; do
-						log "Working on story with id: $l" 0
-						agilefant-automation-getStory-simple X_STORY $l
-						agilefant-automation-getStory STORY_TASKS $l
-						STORY_TASKS_COUNT=$(echo $STORY_TASKS | jq -r '. | .tasks | length')
-						for z in $(seq 1 "$STORY_TASKS_COUNT");
-						do
-							TASK_ID=$(echo $STORY_TASKS | jq --arg Z $z '. | .tasks[$Z | tonumber -1] | .id')
-							log "Working on task: $TASK_ID" 0
-							agilefant-automation-getTask-simple X_TASK $TASK_ID
-							X_STORY=$(echo $X_STORY | jq --arg Z $z --arg X "$X_TASK" '. | .tasks[$Z | tonumber -1] |= .+ ($X | fromjson)')
+				if [ ! "$PROJECT_STORIES" == "" ]; then
+					count=1
+					while read -ra STORIES; do
+						for l in "${STORIES[@]}"; do
+							log "Working on story with id: $l" 0
+							agilefant-automation-getStory-simple X_STORY $l
+							agilefant-automation-getStory STORY_TASKS $l
+							STORY_TASKS_COUNT=$(echo $STORY_TASKS | jq -r '. | .tasks | length')
+							for z in $(seq 1 "$STORY_TASKS_COUNT");
+							do
+								TASK_ID=$(echo $STORY_TASKS | jq --arg Z $z '. | .tasks[$Z | tonumber -1] | .id')
+								log "Working on task: $TASK_ID" 0
+								agilefant-automation-getTask-simple X_TASK $TASK_ID
+								X_STORY=$(echo $X_STORY | jq --arg Z $z --arg X "$X_TASK" '. | .tasks[$Z | tonumber -1] |= .+ ($X | fromjson)')
+							done
 						done
-					done
-					X_PROJECT=$(echo $X_PROJECT | jq --arg L "$count" --arg X "$X_STORY" '. | .stories[$L | tonumber -1] |= .+ ($X | fromjson)')
-					count=$(($count+1))
-				done <<< "$PROJECT_STORIES"
+						X_PROJECT=$(echo $X_PROJECT | jq --arg L "$count" --arg X "$X_STORY" '. | .stories[$L | tonumber -1] |= .+ ($X | fromjson)')
+						count=$(($count+1))
+					done <<< "$PROJECT_STORIES"
+				fi
 				X_PRODUCT=$(echo $X_PRODUCT | jq --arg J $j --arg X "$X_PROJECT" '. | .projects[$J | tonumber -1] |= .+ ($X | fromjson)')
 			fi
 			if [ "$PROJECT_OR_ITERATION" == "ITERATION" ]; then
