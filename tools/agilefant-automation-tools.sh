@@ -644,7 +644,7 @@ agilefant-automation-deleteTask() {
 # calls callbacks with 3 args:
 # callback OBJECT_ID OBJECT_JSON MAIN_JSON
 # calls in this order: project-stories-tasks - project-stories - projects - iteration-story-tasks - iteration-stories - iteration-tasks - products
-agilefant-automation-ExecForAll() {
+agilefant-automation-execForAll() {
 MAIN_JSON=$1
 	PRODUCTS=$(echo $MAIN_JSON | jq '. | .products')
 	PRODUCT_COUNT=$(echo $MAIN_JSON | jq '. | .products | length')
