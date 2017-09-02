@@ -690,6 +690,47 @@ MAIN_JSON=$1
 					done
 					$5 $STORY_ID $STORY $MAIN_JSON
 				done
+				ITERATION_COUNT=$(echo $ITERATIONS | jq '. | length')
+				log "Number of iterations: $ITERATION_COUNT" 0
+				for k in $(seq 1 "$ITERATION_COUNT");
+				do
+					STORIES=[]
+					TASKS=[]
+					ITERATION=$(echo $ITERATIONS | jq --arg K $k '. | .[$K | tonumber -1]')
+					ITERATION_ID=$(echo $ITERATIONS | jq --arg K $k '. | .[$K | tonumber -1].id')
+					log "ITERATION_ID: $ITERATION_ID" 0
+					STORIES=$(echo $ITERATIONS | jq --arg K $k '. | .[$K | tonumber -1] | .stories')
+					STORIES_COUNT=$(echo $ITERATIONS | jq --arg K $k '. | .[$K | tonumber -1] | .stories | length')
+					log "Number of stories: $STORIES_COUNT" 0
+					for l in $(seq 1 "$STORIES_COUNT");
+					do	
+						STORY_ID=$(echo $ITERATIONS | jq --arg K $k --arg L $l '. | .[$K | tonumber -1] | .stories[$L | tonumber -1].id')
+						log "STORY_ID: $STORY_ID" 0
+						STORY=$(echo $ITERATIONS | jq --arg K $k --arg L $l '. | .[$K | tonumber -1] | .stories[$L | tonumber -1]')
+						TASKS=$(echo $ITERATIONS | jq --arg K $k --arg L $l '. | .[$K | tonumber -1] | .stories[$L | tonumber -1] | .tasks')
+						TASKS_COUNT=$(echo $ITERATIONS | jq --arg K $k --arg L $l '. | .[$K | tonumber -1] | .stories[$L | tonumber -1] | .tasks | length')
+						log "Number of tasks: $TASKS_COUNT" 0
+						for m in $(seq 1 "$TASKS_COUNT");
+						do
+							TASK_ID=$(echo $ITERATIONS | jq --arg K $k --arg L $l --arg M $m '. | .[$K | tonumber -1] | .stories[$L | tonumber -1] | .tasks[$M | tonumber -1].id')
+							log "TASK_ID: $TASK_ID" 0
+							TASK=$(echo $ITERATIONS | jq --arg K $k --arg L $l --arg M $m '. | .[$K | tonumber -1] | .stories[$L | tonumber -1] | .tasks[$M | tonumber -1]')
+							$6 $TASK_ID $TASK $MAIN_JSON
+						done
+						$5 $STORY_ID $STORY $MAIN_JSON
+					done
+					TASKS=$(echo $ITERATIONS | jq --arg K $k '. | .[$K | tonumber -1] | .tasks')
+					TASKS_COUNT=$(echo $ITERATIONS | jq --arg K $k '. | .[$K | tonumber -1] | .tasks | length')
+					log "Number of tasks: $TASKS_COUNT" 0
+					for m in $(seq 1 "$TASKS_COUNT");
+					do
+						TASK_ID=$(echo $ITERATIONS | jq --arg K $k --arg M $m '. | .[$K | tonumber -1] | .tasks[$M | tonumber -1].id')
+						log "TASK_ID: $TASK_ID" 0
+						TASK=$(echo $ITERATIONS | jq --arg K $k --arg M $m '. | .[$K | tonumber -1] | .tasks[$M | tonumber -1]')
+						$6 $TASK_ID $TASK $MAIN_JSON
+					done
+					$4 $ITERATION_ID $ITERATION $MAIN_JSON
+				done
 				$3 $PROJECT_ID $PROJECT $MAIN_JSON				
 			done
 		fi
