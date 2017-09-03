@@ -2,17 +2,21 @@
 
 All scripts are intended to be used with the run.sh wrapper script. they depend on the logging and tool functions! See the conf/ folder for the run.sh config files.
 
+there are things that are totally left out right now: labels, ranking, spending effort, stroy tree management and user management. if i have the time or the need to implement them i will do it.
+
 ## scripts:
 
 ### agilefant_installation.sh
 
 script to automatically install agilefant opensource on a ubuntu (or apt based system). tested with a ubuntu 16.04 x86_64 minimal installation
 
+### agilefant_installation.sh
+
+deletes the whole agilefant structure or parts of it. see the conf/agilefant-deleteAll.conf file for options. 
+
 ### tools/agilefant-automation-tools.sh
 
-script to provide a agilefant commandline api. calls for creating, deleting, editing objects are implemented. provides a function to get a json representation of all the objects to perform searches etc. login/logout function. function to execute callbacks for each object.
-
-there are things that are totally left out right now: labels and ranking, spending effort and user management. if i have the time and the need to implement them i will do it.
+script to provide a agilefant commandline api. calls for creating, deleting, editing objects are implemented. provides a function to get a json representation of all the objects to perform searches etc. login/logout function. function to execute callbacks for each object, see the agilefant_deleteAll.sh for an example on how to use it.
 
 # WARNING:
 
