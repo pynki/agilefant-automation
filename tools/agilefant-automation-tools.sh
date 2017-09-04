@@ -7,8 +7,9 @@ agilefant-automation-createQueryFromJson() {
 	QUERY=""
 	ARR=( $(echo "$2" | jq -r 'keys[]') )
 	FIRST="true"
-	for key in "${ARR[@]}";				
-	do	
+	local key
+	for key in "${ARR[@]}";		
+	do
 		if [ "$FIRST" == "false" ]; then
 			QUERY=${QUERY}"&"
 		else
@@ -19,6 +20,7 @@ agilefant-automation-createQueryFromJson() {
 		VALUE=$(echo "$VALUE" | jq -r '.')
 		if [ "$IS_ARR" == "true" ]; then
 			ARR_LENGTH=$(echo "$VALUE" | jq '. | length')
+			local i
 			for i in $(seq 1 "$ARR_LENGTH");
 			do
 				ARR_VALUE=$(echo $VALUE | jq --arg I $i '. | .[$I | tonumber -1]')
@@ -168,7 +170,7 @@ agilefant-automation-getProduct-simple() {
 	local GS_JSON=$GS_PRODUCT_JSON
 	
 	reVal=$GS_JSON
-    log "JSON is: $GS_JSON" 0
+    log "GS_JSON is: $GS_JSON" 0
 }
 
 # call agilefant-automation-getProject-simple $RETURN_VAL $ID
@@ -191,7 +193,7 @@ agilefant-automation-getProject-simple() {
 	local GS_JSON=$GS_PROJECT_JSON
 	
 	reVal=$GS_JSON
-    log "JSON is: $GS_JSON" 0
+    log "GS_JSON is: $GS_JSON" 0
 }
 
 # call agilefant-automation-getIteration-simple $RETURN_VAL $ID
@@ -213,7 +215,7 @@ agilefant-automation-getIteration-simple() {
 	local GS_JSON=$GS_ITERATION_JSON
 	
 	reVal=$GS_JSON
-    log "JSON is: $GS_JSON" 0
+    log "GS_JSON is: $GS_JSON" 0
 }
 
 # call agilefant-automation-getStory-simple $RETURN_VAL $ID
@@ -242,7 +244,7 @@ agilefant-automation-getStory-simple() {
 	local GS_JSON=$GS_STORY_JSON
 	
 	reVal=$GS_JSON
-    log "JSON is: $GS_JSON" 0
+    log "GS_JSON is: $GS_JSON" 0
 }
 
 # call agilefant-automation-getTask-simple $RETURN_VAL $ID
@@ -261,10 +263,10 @@ agilefant-automation-getTask-simple() {
 		local GS_TASK_JSON=$(echo $GS_TASK_JSON | jq '. | del(.data.responsibles) | del(.data.iteration)')
 	done
 	
-	local JSON=$GS_TASK_JSON
+	local GS_JSON=$GS_TASK_JSON
 	
-	reVal=$JSON
-    log "JSON is: $GS_JSON" 0
+	reVal=$GS_JSON
+    log "GS_JSON is: $GS_JSON" 0
 }
 
 # call agilefant-automation-getMainStructure $RETURN_VAL
@@ -391,30 +393,17 @@ agilefant-automation-getMainStructure() {
 
 ###############################################################################
 
-# call agilefant-automation-createProject $PROJECT_JSON $RETURN_VAL $NEW_ID
+# call agilefant-automation-createProduct $PRODUCT_JSON $RETURN_VAL $NEW_ID
 # $PROJECT_JSON should look like:
 # '{"teamsChanged": true, "product.name": "PRODUCT555555555", "product.description": "DESCRIPTION", "teamIds": [2,3]}'
 # set "teamsChanged" to != true for no team access
 agilefant-automation-createProduct() {
 	log "Creating product" 1		
 	declare -n reVal=$2
-	declare -n reId=$3
-	
+	declare -n reId=$3	
 	agilefant-automation-createQueryFromJson CURL_DATA "$1"
-	
-	#CURL_DATA=${CURL_DATA}"&product.name="$(echo $1 | jq -r '. | .name')
-	#CURL_DATA=${CURL_DATA}"&product.description="$(echo $1 | jq -r '. | .description')	
-	#TEAMS_CHANGED=$(echo $1 | jq -r '. | .teamsChanged')
-	#CURL_DATA=${CURL_DATA}"&teamsChanged="$TEAMS_CHANGED
-	#if [ "$TEAMS_CHANGED" == "true" ]; then
-	#	TEAM_COUNT=$(echo $1 | jq '. | .teamIds | length')
-	#	for i in $(seq 1 "$TEAM_COUNT");
-	#	do
-	#		CURL_DATA=${CURL_DATA}"&teamIds="$(echo $1 | jq --arg I $i '. | #.teamIds[$I | tonumber -1]')
-	#	done
-	#fi
 	log "CURL_DATA: $CURL_DATA" 0
-	CURL_OUTPUT=$(curl -s --cookie $COOKIE_FILE_DIR/$COOKIE_FILE_NAME --cookie-jar $COOKIE_FILE_DIR/$COOKIE_FILE_NAME --data "$CURL_DATA" --location $AGILEFANT_HOST:$AGILEFANT_PORT$AGILEFANT_PATH/ajax/storeNewProduct.action)
+	CURL_OUTPUT=$(curl -s --cookie $COOKIE_FILE_DIR/$COOKIE_FILE_NAME --cookie-jar $COOKIE_FILE_DIR/$COOKIE_FILE_NAME --data "$CURL_DATA" --location $AGILEFANT_HOST:$AGILEFANT_PORT$AGILEFANT_PATH/ajax/storeNewProduct.action)	
 	reVal=$CURL_OUTPUT
 	reId=$(echo $CURL_OUTPUT | jq ' . | .id')
 	log "CURL_OUTPUT is: $CURL_OUTPUT" 0
@@ -427,6 +416,7 @@ agilefant-automation-createProduct() {
 # set status to one of: "GREEN", "YELLOW", "RED", "GREY", "BLACK", default is "GREEN"
 # "backlogSize", "baselineLoad" and "status" can be blank, they are not in the original creation call for projects (http://10.254.0.33:8080/ajax/storeNewProject.action) but in the change iteration call (http://10.254.0.33:8080/ajax/storeProject.action), but they can be set on project creation as well
 agilefant-automation-createProject() {
+	log "Creating project" 1
 	declare -n reVal=$2
 	declare -n reId=$3
 	agilefant-automation-createQueryFromJson CURL_DATA "$1"
@@ -439,7 +429,7 @@ agilefant-automation-createProject() {
 
 # call agilefant-automation-createIteration $ITERATION_JSON $RETURN_VAL $NEW_ID
 # $ITERATION_JSON should look like:
-# '{"iteration.startDate": 1503964800000, "iteration.endDate": 1505210400000, "assigneesChanged": true,"iteration.name": "ITERATION1111111111111111", "iteration.description": "DESCRIPTION", "teamsChanged": true, "assigneeIds": [5,3], "teamIds": [2,3],"iteration.backlogSize": "5h", "iteration.baselineLoad": "6h"}'
+# '{"parentBacklogId": 1, "iteration.startDate": 1503964800000, "iteration.endDate": 1505210400000, "assigneesChanged": true,"iteration.name": "ITERATION1111111111111111", "iteration.description": "DESCRIPTION", "teamsChanged": true, "assigneeIds": [5,3], "teamIds": [2,3],"iteration.backlogSize": "5h", "iteration.baselineLoad": "6h"}'
 # do not set "parentBacklogId" for standalone iteration
 # set "assigneesChanged" to != true for no assignees
 # set "teamsChanged" to != true for no team access, only for standalone iterations neccessary
@@ -478,11 +468,11 @@ agilefant-automation-createStory() {
 	log "CURL_OUTPUT is: $CURL_OUTPUT" 0	
 }
 
-
 # call agilefant-automation-createTask $TASK_JSON $RETURN_VAL $NEW_ID
 # $TASK_JSON should look like:
-#'{"storyId": 19, "responsiblesChanged": true, "name": "TASK1", "description": "DESCRIPTION", "newResponsibles": [5,3], "state": "NOT_STARTED"}'
+#'{"storyId": 19, "responsiblesChanged": true, "name": "TASK1", "description": "DESCRIPTION", "newResponsibles": [5,3], "state": "NOT_STARTED", "task.effortLeft": 123}'
 # "storyId" does not need to be a 'LeafStory'
+# replace "storyId" with "iterationId" for standalone iteration task
 # set "state" to one of: "NOT_STARTED", "STARTED" (aka 'In Progress'), "PENDING", "BLOCKED", "IMPLEMENTED" (aka 'Ready'), "DONE", "DEFERRED"
 agilefant-automation-createTask() {
 	declare -n reVal=$2
@@ -651,6 +641,7 @@ MAIN_JSON=$1
 	PRODUCTS=$(echo $MAIN_JSON | jq '. | .products')
 	PRODUCT_COUNT=$(echo $MAIN_JSON | jq '. | .products | length')
 	log "Number of products: $PRODUCT_COUNT" 0
+	local i
 	for i in $(seq 1 "$PRODUCT_COUNT");
 	do
 		PROJECTS="[]"
@@ -664,6 +655,7 @@ MAIN_JSON=$1
 		else
 			PROJECT_COUNT=$(echo $PRODUCTS | jq --arg I $i '. | .[$I | tonumber -1].projects | length')
 			log "Number of projects: $PROJECT_COUNT" 0
+			local j
 			for j in $(seq 1 "$PROJECT_COUNT");
 			do
 				STORIES=[]
@@ -675,6 +667,7 @@ MAIN_JSON=$1
 				STORIES=$(echo $PRODUCTS | jq --arg I $i --arg J $j '. | .[$I | tonumber -1].projects[$J | tonumber -1] | .stories')
 				STORIES_COUNT=$(echo $PRODUCTS | jq --arg I $i --arg J $j '. | .[$I | tonumber -1].projects[$J | tonumber -1] | .stories | length')
 				log "Number of stories: $STORIES_COUNT" 0
+				local l
 				for l in $(seq 1 "$STORIES_COUNT");
 				do
 					STORY_ID=$(echo $PRODUCTS | jq --arg I $i --arg J $j --arg L $l '. | .[$I | tonumber -1].projects[$J | tonumber -1] | .stories[$L | tonumber -1].id')
@@ -683,17 +676,23 @@ MAIN_JSON=$1
 					TASKS=$(echo $PRODUCTS | jq --arg I $i --arg J $j --arg L $l '. | .[$I | tonumber -1].projects[$J | tonumber -1] | .stories[$L | tonumber -1] | .tasks')
 					TASKS_COUNT=$(echo $PRODUCTS | jq --arg I $i --arg J $j --arg L $l '. | .[$I | tonumber -1].projects[$J | tonumber -1] | .stories[$L | tonumber -1] | .tasks | length')
 					log "Number of tasks: $TASKS_COUNT" 0
+					local m
 					for m in $(seq 1 "$TASKS_COUNT");
 					do
 						TASK_ID=$(echo $PRODUCTS | jq --arg I $i --arg J $j --arg L $l --arg M $m '. | .[$I | tonumber -1].projects[$J | tonumber -1] | .stories[$L | tonumber -1] | .tasks[$M | tonumber -1].id')
 						log "TASK_ID: $TASK_ID" 0
 						TASK=$(echo $PRODUCTS | jq --arg I $i --arg J $j --arg L $l --arg M $m '. | .[$I | tonumber -1].projects[$J | tonumber -1] | .stories[$L | tonumber -1] | .tasks[$M | tonumber -1]')
-						$6 $TASK_ID $TASK $MAIN_JSON
+						if [ ! -z "$6" ]; then
+							$6 $TASK_ID $TASK $MAIN_JSON
+						fi
 					done
-					$5 $STORY_ID $STORY $MAIN_JSON
+					if [ ! -z "$5" ]; then
+						$5 $STORY_ID $STORY $MAIN_JSON
+					fi
 				done
 				ITERATION_COUNT=$(echo $ITERATIONS | jq '. | length')
 				log "Number of iterations: $ITERATION_COUNT" 0
+				local k
 				for k in $(seq 1 "$ITERATION_COUNT");
 				do
 					STORIES=[]
@@ -704,6 +703,7 @@ MAIN_JSON=$1
 					STORIES=$(echo $ITERATIONS | jq --arg K $k '. | .[$K | tonumber -1] | .stories')
 					STORIES_COUNT=$(echo $ITERATIONS | jq --arg K $k '. | .[$K | tonumber -1] | .stories | length')
 					log "Number of stories: $STORIES_COUNT" 0
+					local l
 					for l in $(seq 1 "$STORIES_COUNT");
 					do	
 						STORY_ID=$(echo $ITERATIONS | jq --arg K $k --arg L $l '. | .[$K | tonumber -1] | .stories[$L | tonumber -1].id')
@@ -712,32 +712,45 @@ MAIN_JSON=$1
 						TASKS=$(echo $ITERATIONS | jq --arg K $k --arg L $l '. | .[$K | tonumber -1] | .stories[$L | tonumber -1] | .tasks')
 						TASKS_COUNT=$(echo $ITERATIONS | jq --arg K $k --arg L $l '. | .[$K | tonumber -1] | .stories[$L | tonumber -1] | .tasks | length')
 						log "Number of tasks: $TASKS_COUNT" 0
+						local m
 						for m in $(seq 1 "$TASKS_COUNT");
 						do
 							TASK_ID=$(echo $ITERATIONS | jq --arg K $k --arg L $l --arg M $m '. | .[$K | tonumber -1] | .stories[$L | tonumber -1] | .tasks[$M | tonumber -1].id')
 							log "TASK_ID: $TASK_ID" 0
 							TASK=$(echo $ITERATIONS | jq --arg K $k --arg L $l --arg M $m '. | .[$K | tonumber -1] | .stories[$L | tonumber -1] | .tasks[$M | tonumber -1]')
-							$6 $TASK_ID $TASK $MAIN_JSON
+							if [ ! -z "$6" ]; then
+								$6 $TASK_ID $TASK $MAIN_JSON
+							fi
 						done
-						$5 $STORY_ID $STORY $MAIN_JSON
+						if [ ! -z "$5" ]; then
+							$5 $STORY_ID $STORY $MAIN_JSON
+						fi
 					done
 					TASKS=$(echo $ITERATIONS | jq --arg K $k '. | .[$K | tonumber -1] | .tasks')
 					TASKS_COUNT=$(echo $ITERATIONS | jq --arg K $k '. | .[$K | tonumber -1] | .tasks | length')
 					log "Number of tasks: $TASKS_COUNT" 0
+					local m
 					for m in $(seq 1 "$TASKS_COUNT");
 					do
 						TASK_ID=$(echo $ITERATIONS | jq --arg K $k --arg M $m '. | .[$K | tonumber -1] | .tasks[$M | tonumber -1].id')
 						log "TASK_ID: $TASK_ID" 0
 						TASK=$(echo $ITERATIONS | jq --arg K $k --arg M $m '. | .[$K | tonumber -1] | .tasks[$M | tonumber -1]')
-						$6 $TASK_ID $TASK $MAIN_JSON
+						if [ ! -z "$6" ]; then
+							$6 $TASK_ID $TASK $MAIN_JSON
+						fi
 					done
-					$4 $ITERATION_ID $ITERATION $MAIN_JSON
+					if [ ! -z "$4" ]; then
+						$4 $ITERATION_ID $ITERATION $MAIN_JSON
+					fi
 				done
-				$3 $PROJECT_ID $PROJECT $MAIN_JSON				
+				if [ ! -z "$3" ]; then
+					$3 $PROJECT_ID $PROJECT $MAIN_JSON
+				fi				
 			done
 		fi
 		ITERATION_COUNT=$(echo $ITERATIONS | jq '. | length')
 		log "Number of iterations: $ITERATION_COUNT" 0
+		local k
 		for k in $(seq 1 "$ITERATION_COUNT");
 		do
 			STORIES=[]
@@ -748,6 +761,7 @@ MAIN_JSON=$1
 			STORIES=$(echo $ITERATIONS | jq --arg K $k '. | .[$K | tonumber -1] | .stories')
 			STORIES_COUNT=$(echo $ITERATIONS | jq --arg K $k '. | .[$K | tonumber -1] | .stories | length')
 			log "Number of stories: $STORIES_COUNT" 0
+			local l
 			for l in $(seq 1 "$STORIES_COUNT");
 			do
 				STORY_ID=$(echo $ITERATIONS | jq --arg K $k --arg L $l '. | .[$K | tonumber -1] | .stories[$L | tonumber -1].id')
@@ -756,27 +770,39 @@ MAIN_JSON=$1
 				TASKS=$(echo $ITERATIONS | jq --arg K $k --arg L $l '. | .[$K | tonumber -1] | .stories[$L | tonumber -1] | .tasks')
 				TASKS_COUNT=$(echo $ITERATIONS | jq --arg K $k --arg L $l '. | .[$K | tonumber -1] | .stories[$L | tonumber -1] | .tasks | length')
 				log "Number of tasks: $TASKS_COUNT" 0
+				local m
 				for m in $(seq 1 "$TASKS_COUNT");
 				do
 					TASK_ID=$(echo $ITERATIONS | jq --arg K $k --arg L $l --arg M $m '. | .[$K | tonumber -1] | .stories[$L | tonumber -1] | .tasks[$M | tonumber -1].id')
 					log "TASK_ID: $TASK_ID" 0
 					TASK=$(echo $ITERATIONS | jq --arg K $k --arg L $l --arg M $m '. | .[$K | tonumber -1] | .stories[$L | tonumber -1] | .tasks[$M | tonumber -1]')
-					$6 $TASK_ID $TASK $MAIN_JSON
+					if [ ! -z "$6" ]; then
+						$6 $TASK_ID $TASK $MAIN_JSON
+					fi
 				done
-				$5 $STORY_ID $STORY $MAIN_JSON
+				if [ ! -z "$5" ]; then
+					$5 $STORY_ID $STORY $MAIN_JSON
+				fi
 			done
 			TASKS=$(echo $ITERATIONS | jq --arg K $k '. | .[$K | tonumber -1] | .tasks')
 			TASKS_COUNT=$(echo $ITERATIONS | jq --arg K $k '. | .[$K | tonumber -1] | .tasks | length')
 			log "Number of tasks: $TASKS_COUNT" 0
+			local m
 			for m in $(seq 1 "$TASKS_COUNT");
 			do
 				TASK_ID=$(echo $ITERATIONS | jq --arg K $k --arg M $m '. | .[$K | tonumber -1] | .tasks[$M | tonumber -1].id')
 				log "TASK_ID: $TASK_ID" 0
 				TASK=$(echo $ITERATIONS | jq --arg K $k --arg M $m '. | .[$K | tonumber -1] | .tasks[$M | tonumber -1]')
-				$6 $TASK_ID $TASK $MAIN_JSON
+				if [ ! -z "$6" ]; then
+					$6 $TASK_ID $TASK $MAIN_JSON
+				fi
 			done
-			$4 $ITERATION_ID $ITERATION $MAIN_JSON
+			if [ ! -z "$4" ]; then
+				$4 $ITERATION_ID $ITERATION $MAIN_JSON
+			fi
 		done
-		$2 $PRODUCT_ID $PRODUCT $MAIN_JSON
+		if [ ! -z "$2" ]; then
+		 $2 $PRODUCT_ID $PRODUCT $MAIN_JSON
+		fi
 	done
 }
