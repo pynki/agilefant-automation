@@ -1,0 +1,4 @@
+[submodule "agilefant-API"]
+	path = agilefant-API
+	url = /mnt/d/git/jupiter/agilefant-API
+	branch = master
