@@ -1,4 +1,4 @@
 [submodule "agilefant-API"]
 	path = agilefant-API
-	url = /mnt/d/git/jupiter/agilefant-API
+	url = https://github.com/pynki/agilefant-API.git
 	branch = master
