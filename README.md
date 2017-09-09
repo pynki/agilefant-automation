@@ -18,7 +18,7 @@ and run the scripts by passing the config file to the runsh wrapper script
 
 there are things that are totally left out right now: labels, ranking, spending effort, stroy tree management and user management. if i have the time or the need to implement them i will do it.
 
-## scripts:
+## Scripts
 
 ### agilefant_installation.sh
 
@@ -47,6 +47,26 @@ Script to build a agilefant object structure (for testing purposes...at least th
 Please see the config file for runsh at:
 
 `conf/agilefant_buildTestStructure.conf` 
+
+for options.
+
+### agilefant_assignUsers.sh
+
+Script to assign spcific stories/tasks to users based on their state.
+
+Please see the config file for runsh at:
+
+`conf/agilefant_assignUsers.conf` 
+
+for options.
+
+### agilefant_createIterations.sh
+
+Script to create iterations. Either for every project or for standalone iterations.
+
+Please see the config file for runsh at:
+
+`conf/agilefant_createIterations.conf` 
 
 for options.
 
