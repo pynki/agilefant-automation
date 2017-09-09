@@ -18,6 +18,8 @@ and run the scripts by passing the config file to the runsh wrapper script
 
 there are things that are totally left out right now: labels, ranking, spending effort, stroy tree management and user management. if i have the time or the need to implement them i will do it.
 
+These scripts are just examples on how to use the [agilefant-API](https://github.com/pynki/agilefant-API) functions. 
+
 ## Scripts
 
 ### agilefant_installation.sh
@@ -50,13 +52,13 @@ Please see the config file for runsh at:
 
 for options.
 
-### agilefant_assignUsers.sh
+### agilefant_assignUser.sh
 
 Script to assign spcific stories/tasks to users based on their state.
 
 Please see the config file for runsh at:
 
-`conf/agilefant_assignUsers.conf` 
+`conf/agilefant_assignUser.conf` 
 
 for options.
 
