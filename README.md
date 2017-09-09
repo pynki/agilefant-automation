@@ -1,6 +1,20 @@
-# Project to automate the opensource agilefant
+# IMPORTANT
 
-All scripts are intended to be used with the run.sh wrapper script. they depend on the logging and tool functions! See the conf/ folder for the run.sh config files.
+These scripts are intended to be called from the run.sh wrapper script. Please see [runsh github repository](https://github.com/pynki/runsh) on how to use the wrapper script. 
+
+Before cloning this repository clone the runsh wrapper script repository.
+
+`git clone https://github.com/pynki/runsh`
+
+then chaneg the folder to the cloned repo:
+
+`cd ./runsh`
+
+and run the scripts by passing the config file to the runsh wrapper script
+
+`./run.sh /path/to/what/ever/script.conf`
+
+# About
 
 there are things that are totally left out right now: labels, ranking, spending effort, stroy tree management and user management. if i have the time or the need to implement them i will do it.
 
@@ -8,36 +22,35 @@ there are things that are totally left out right now: labels, ranking, spending 
 
 ### agilefant_installation.sh
 
-script to automatically install agilefant opensource on a ubuntu (or apt based system). tested with a ubuntu 16.04 x86_64 minimal installation
+Script to automatically install agilefant opensource on a ubuntu (or apt based system). Tested with a ubuntu 16.04 x86_64 minimal installation. It fixes the java version problem that occurs with the [original agilefant installation guide](https://github.com/Agilefant/agilefant/wiki/Agilefant-installation-guide). The java7 package is no longer available from the referenced ppa. This script installs oracle java8!
+
+Please see the config file for runsh at:
+
+`conf/agilefant_installation.conf` 
+
+for options.
 
 ### agilefant_deleteAll.sh
 
-deletes the whole agilefant structure or parts of it. see the conf/agilefant-deleteAll.conf file for options. 
+Deletes the whole agilefant structure or parts of it.
+
+Please see the config file for runsh at:
+
+`conf/agilefant_deleteAll.conf` 
+
+for options.
 
 ### agilefant_buildTestStructure.sh
 
-script to build a agilefant object structure (for testing purposes...at least thats how i use it). this script may take some time to execute! depending on the configuration it can create a massive amount of objects!
+Script to build a agilefant object structure (for testing purposes...at least thats how i use it). This script may take some time to execute! Depending on the configuration it can create a massive amount of objects!
 
-Creates PRODUCT_COUNT products
+Please see the config file for runsh at:
 
-Creates STANDALONE_ITERATION_COUNT standalone iterations
+`conf/agilefant_buildTestStructure.conf` 
 
-Creates PRODUCT_COUNT*PROJECT_PER_PRODUCT projects
+for options.
 
-Creates PRODUCT_COUNT*PROJECT_PER_PRODUCT*ITERATION_PER_PROJECT project iterations
+# Remarks
 
-Creates PRODUCT_COUNT*PROJECT_PER_PRODUCT*ITERATION_PER_PROJECT*STORIES_PER_ITERATION + PRODUCT_COUNT*PROJECT_PER_PRODUCT*STORIES_PER_PROJECT + STANDALONE_ITERATION_COUNT*STORIES_PER_ITERATION stories
+This is work in progress. There might be bugs, unhandled corner cases or plain stupid code in the scripts. It works for me, in the cases i use it. If you need something changed: open an issue or fork the code. I am happy about pull requests.
 
-Creates (PRODUCT_COUNT*PROJECT_PER_PRODUCT*ITERATION_PER_PROJECT*STORIES_PER_ITERATION + PRODUCT_COUNT*PROJECT_PER_PRODUCT*STORIES_PER_PROJECT + STANDALONE_ITERATION_COUNT*STORIES_PER_ITERATION)*TASKS_PER_STORY + (PRODUCT_COUNT*PROJECT_PER_PRODUCT*ITERATION_PER_PROJECT + STANDALONE_ITERATION_COUNT)*TASKS_PER_ITERATION tasks
-
-set all the values to 10 and you will end up with 22100 tasks...
-
-### tools/agilefant-automation-tools.sh
-
-script to provide a agilefant commandline api. calls for creating, deleting, editing objects are implemented. provides a function to get a json representation of all the objects to perform searches etc. login/logout function. function to execute callbacks for each object, see the agilefant_deleteAll.sh for an example on how to use it.
-
-# WARNING:
-
-using the ./tools/agilefant-automation-tools.sh functions might come with uncalculated risks! the delete functions will be happy to delete products etc. without asking you any questions! there may be corner cases that are not covered or tested in all the functions!
-
-### all this is work in progress and should not be used if you do not unsderstand the scripts! 
